@@ -5,6 +5,7 @@ import (
 	"log"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,10 +20,20 @@ func executeCommand(command string) (string, error) {
 	return string(output), nil
 }
 
+func executeCommandWithTimeout(command string, timeout time.Duration) (string, error) {
+	parts := strings.Fields(command)
+	cmd := exec.Command(parts[0], parts[1:]...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return string(output), nil
+}
+
 func main() {
 	app := fiber.New()
 
-	app.Get("/routes/show", func(c *fiber.Ctx) error {
+	app.Get("/routes/ip", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
 		if ip == "" {
 			return c.Status(fiber.StatusBadRequest).SendString("IP parameter is required")
@@ -51,14 +62,20 @@ func main() {
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
 		if ip == "" {
-			return c.Status(fiber.StatusBadRequest).SendString("IP parameter is required")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "IP parameter is required"})
 		}
+
 		cmd := fmt.Sprintf("ping %s", ip)
-		response, err := executeCommand(cmd)
+
+		timeout := 10 * time.Second
+		response, err := executeCommandWithTimeout(cmd, timeout)
 		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+			if strings.Contains(err.Error(), "signal: killed") {
+				return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "Ping command timed out"})
+			}
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
-		return c.SendString(fmt.Sprintf("Ping for IP %s:\n%s", ip, response))
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"ip": ip, "response": response})
 	})
 
 	log.Fatal(app.Listen(":8080"))
