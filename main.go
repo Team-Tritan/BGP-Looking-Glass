@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -13,8 +14,16 @@ import (
 func main() {
 	app := fiber.New()
 
+	endpoints := []string{
+		"/route?ip=<your_ip>",
+		"/asn-routes?asn=<asn>",
+		"/ping?ip=<ip>",
+		"/traceroute?ip=<ip>",
+	}
+
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("suck yourself ~as393577~")
+		endpointList := fmt.Sprintf("suck yourself ~as393577~\n\nAvailable Endpoints:\n%s", strings.Join(endpoints, "\n"))
+		return c.SendString(endpointList)
 	})
 
 	app.Get("/route", func(c *fiber.Ctx) error {

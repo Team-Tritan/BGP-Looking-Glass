@@ -1,10 +1,8 @@
 package commands
 
 import (
-	"fmt"
 	"os/exec"
 	"strings"
-	"time"
 )
 
 func ExecuteCommand(command string) (string, error) {
@@ -28,43 +26,4 @@ func ExecuteCommandAsync(command string, resultChan chan<- string, doneChan chan
 		resultChan <- string(output)
 	}
 	doneChan <- true
-}
-
-func ExecutePing(ip string) (string, error) {
-	cmd := fmt.Sprintf("ping -c 5 %s", ip)
-	resultChan := make(chan string)
-	doneChan := make(chan bool)
-
-	go ExecuteCommandAsync(cmd, resultChan, doneChan)
-
-	timeout := 10 * time.Second
-	select {
-	case response := <-resultChan:
-		return response, nil
-	case <-time.After(timeout):
-		doneChan <- true
-		return "Ping command timed out", nil
-	}
-}
-
-func ExecuteBirdCommand(command string) (string, error) {
-	cmd := fmt.Sprintf("sudo birdc show route %s", command)
-	return ExecuteCommand(cmd)
-}
-
-func ExecuteTraceroute(ip string) (string, error) {
-	cmd := fmt.Sprintf("traceroute %s", ip)
-	resultChan := make(chan string)
-	doneChan := make(chan bool)
-
-	go ExecuteCommandAsync(cmd, resultChan, doneChan)
-
-	timeout := 10 * time.Second
-	select {
-	case response := <-resultChan:
-		return response, nil
-	case <-time.After(timeout):
-		doneChan <- true
-		return "Traceroute command timed out", nil
-	}
 }
