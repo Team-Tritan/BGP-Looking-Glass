@@ -27,25 +27,12 @@ func main() {
 		if ip == "" {
 			return c.Status(fiber.StatusBadRequest).SendString("IP parameter is required")
 		}
-		cmd := fmt.Sprintf("sudo birdc show route %s", ip)
+		cmd := fmt.Sprintf("birdc show route %s", ip)
 		response, err := executeCommand(cmd)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		}
 		return c.SendString(fmt.Sprintf("Route Info for IP %s:\n%s", ip, response))
-	})
-
-	app.Get("/mtr", func(c *fiber.Ctx) error {
-		ip := c.Query("ip")
-		if ip == "" {
-			return c.Status(fiber.StatusBadRequest).SendString("IP parameter is required")
-		}
-		cmd := fmt.Sprintf("mtr %s", ip)
-		response, err := executeCommand(cmd)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
-		}
-		return c.SendString(fmt.Sprintf("MTR for IP %s:\n%s", ip, response))
 	})
 
 	app.Get("/ping", func(c *fiber.Ctx) error {
@@ -61,20 +48,7 @@ func main() {
 		return c.SendString(fmt.Sprintf("Ping for IP %s:\n%s", ip, response))
 	})
 
-	app.Get("/traceroute", func(c *fiber.Ctx) error {
-		ip := c.Query("ip")
-		if ip == "" {
-			return c.Status(fiber.StatusBadRequest).SendString("IP parameter is required")
-		}
-		cmd := fmt.Sprintf("traceroute %s", ip)
-		response, err := executeCommand(cmd)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
-		}
-		return c.SendString(fmt.Sprintf("Traceroute for IP %s:\n%s", ip, response))
-	})
-
-	app.Get("/bgp", func(c *fiber.Ctx) error {
+	app.Get("/routes/asn", func(c *fiber.Ctx) error {
 		asn := c.Query("asn")
 		if asn == "" {
 			return c.Status(fiber.StatusBadRequest).SendString("ASN parameter is required")
