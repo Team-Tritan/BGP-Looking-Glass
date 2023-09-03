@@ -15,6 +15,7 @@ func SetupRoutes(app *fiber.App) {
 		"/asn-routes?asn=<asn>",
 		"/ping?ip=<ip>",
 		"/traceroute?ip=<ip>",
+		"/mtr?ip=<ip>",
 	}
 
 	app.Get("/", func(c *fiber.Ctx) error {
