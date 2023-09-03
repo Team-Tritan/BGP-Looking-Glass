@@ -32,7 +32,7 @@ func SetupRoutes(app *fiber.App) {
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		}
-		return c.SendString(fmt.Sprintf("~as393577 looking glass (ง'̀-'́)ง♡~\n\nRoute Info for IP %s:\n%s", subnet, response))
+		return c.SendString(fmt.Sprintf("~as393577 looking glass (ง'̀-'́)ง♡~\n\n%s", response))
 	})
 
 	app.Get("/bgp-routes", func(c *fiber.Ctx) error {
