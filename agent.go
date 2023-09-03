@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"tritan.dev/bgp-tool/regex"
 	"tritan.dev/bgp-tool/commands"
+	"tritan.dev/bgp-tool/regex"
 )
 
 func main() {
@@ -53,5 +53,5 @@ func main() {
 		return c.SendString(fmt.Sprintf("Ping for IP %s:\n%s", ip, response))
 	})
 
-	log.Fatal(app.Listen(":8080"))
+	log.Fatal(app.Listen(":4000"))
 }
