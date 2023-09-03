@@ -77,7 +77,7 @@ func executeBirdCommand(command string) (string, error) {
 func main() {
 	app := fiber.New()
 
-	app.Get("/routes/ip", func(c *fiber.Ctx) error {
+	app.Get("/route", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
 		if !isValidSubnet(ip) {
 			return c.Status(fiber.StatusBadRequest).SendString("Invalid IP format")
@@ -89,7 +89,7 @@ func main() {
 		return c.SendString(fmt.Sprintf("Route Info for IP %s:\n%s", ip, response))
 	})
 
-	app.Get("/routes/bgp", func(c *fiber.Ctx) error {
+	app.Get("/asn-routes", func(c *fiber.Ctx) error {
 		asn := c.Query("asn")
 		if !isValidASN(asn) {
 			return c.Status(fiber.StatusBadRequest).SendString("Invalid ASN format")
