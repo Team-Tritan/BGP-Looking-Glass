@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"tritan.dev/bgp-tool/Regex"
+	"tritan.dev/bgp-tool/regex"
 	"tritan.dev/bgp-tool/commands"
 )
 
@@ -19,7 +19,7 @@ func main() {
 
 	app.Get("/route", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
-		if !Regex.IsValidSubnet(ip) {
+		if !regex.IsValidSubnet(ip) {
 			return c.Status(fiber.StatusBadRequest).SendString("Invalid subnet param")
 		}
 		response, err := commands.ExecuteBirdCommand(ip)
@@ -31,7 +31,7 @@ func main() {
 
 	app.Get("/asn-routes", func(c *fiber.Ctx) error {
 		asn := c.Query("asn")
-		if !Regex.IsValidASN(asn) {
+		if !regex.IsValidASN(asn) {
 			return c.Status(fiber.StatusBadRequest).SendString("Invalid ASN param")
 		}
 		response, err := commands.ExecuteBirdCommand(fmt.Sprintf("where bgp_path ~ [= * %s * =] all", asn))
@@ -43,7 +43,7 @@ func main() {
 
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
-		if !Regex.IsValidIP(ip) {
+		if !regex.IsValidIP(ip) {
 			return c.Status(fiber.StatusBadRequest).SendString("Invalid IP param")
 		}
 		response, err := commands.ExecutePing(ip)
