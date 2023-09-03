@@ -20,14 +20,17 @@ func executeCommand(command string) (string, error) {
 	return string(output), nil
 }
 
-func executeCommandWithTimeout(command string, timeout time.Duration) (string, error) {
+func executeCommandAsync(command string, resultChan chan<- string, doneChan chan<- bool) {
 	parts := strings.Fields(command)
 	cmd := exec.Command(parts[0], parts[1:]...)
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", err
+		resultChan <- err.Error()
+	} else {
+		resultChan <- string(output)
 	}
-	return string(output), nil
+	doneChan <- true
 }
 
 func main() {
@@ -64,18 +67,21 @@ func main() {
 		if ip == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "IP parameter is required"})
 		}
-
 		cmd := fmt.Sprintf("ping %s", ip)
 
+		resultChan := make(chan string)
+		doneChan := make(chan bool)
+
+		go executeCommandAsync(cmd, resultChan, doneChan)
+
 		timeout := 10 * time.Second
-		response, err := executeCommandWithTimeout(cmd, timeout)
-		if err != nil {
-			if strings.Contains(err.Error(), "signal: killed") {
-				return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "Ping command timed out"})
-			}
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		select {
+		case response := <-resultChan:
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{"ip": ip, "response": response})
+		case <-time.After(timeout):
+			doneChan <- true
+			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "Ping command timed out"})
 		}
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"ip": ip, "response": response})
 	})
 
 	log.Fatal(app.Listen(":8080"))
