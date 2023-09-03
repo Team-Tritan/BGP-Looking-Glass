@@ -15,7 +15,7 @@ func main() {
 	app := fiber.New()
 
 	endpoints := []string{
-		"/route?ip=<your_ip>",
+		"/show-route?ip=<ip>",
 		"/asn-routes?asn=<asn>",
 		"/ping?ip=<ip>",
 		"/traceroute?ip=<ip>",
@@ -26,7 +26,7 @@ func main() {
 		return c.SendString(endpointList)
 	})
 
-	app.Get("/route", func(c *fiber.Ctx) error {
+	app.Get("/show-route", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
 		if !regex.IsValidSubnet(ip) {
 			return c.Status(fiber.StatusBadRequest).SendString("Invalid subnet param")
