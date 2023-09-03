@@ -53,5 +53,17 @@ func main() {
 		return c.SendString(fmt.Sprintf("Ping for IP %s:\n%s", ip, response))
 	})
 
+	app.Get("/traceroute", func(c *fiber.Ctx) error {
+		ip := c.Query("ip")
+		if !regex.IsValidIP(ip) {
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid IP param")
+		}
+		response, err := commands.ExecuteTraceroute(ip)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		}
+		return c.SendString(fmt.Sprintf("Traceroute for IP %s:\n%s", ip, response))
+	})
+
 	log.Fatal(app.Listen(":4000"))
 }
