@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -33,16 +34,55 @@ func executeCommandAsync(command string, resultChan chan<- string, doneChan chan
 	doneChan <- true
 }
 
+var (
+	ipRegex     = regexp.MustCompile(`^\d+\.\d+\.\d+\.\d+$`)
+	subnetRegex = regexp.MustCompile(`^\d+\.\d+\.\d+\.\d+\/\d+$`)
+	asnRegex    = regexp.MustCompile(`^\d+$`)
+)
+
+func isValidIP(ip string) bool {
+	return ipRegex.MatchString(ip)
+}
+
+func isValidSubnet(subnet string) bool {
+	return subnetRegex.MatchString(subnet)
+}
+
+func isValidASN(asn string) bool {
+	return asnRegex.MatchString(asn)
+}
+
+func executePing(ip string) (string, error) {
+	cmd := fmt.Sprintf("ping -c 5 %s", ip)
+	resultChan := make(chan string)
+	doneChan := make(chan bool)
+
+	go executeCommandAsync(cmd, resultChan, doneChan)
+
+	timeout := 10 * time.Second
+	select {
+	case response := <-resultChan:
+		return response, nil
+	case <-time.After(timeout):
+		doneChan <- true
+		return "Ping command timed out", nil
+	}
+}
+
+func executeBirdCommand(command string) (string, error) {
+	cmd := fmt.Sprintf("sudo birdc show route %s", command)
+	return executeCommand(cmd)
+}
+
 func main() {
 	app := fiber.New()
 
 	app.Get("/routes/ip", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
-		if ip == "" {
-			return c.Status(fiber.StatusBadRequest).SendString("IP parameter is required")
+		if !isValidSubnet(ip) {
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid IP format")
 		}
-		cmd := fmt.Sprintf("sudo birdc show route %s", ip)
-		response, err := executeCommand(cmd)
+		response, err := executeBirdCommand(ip)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		}
@@ -51,11 +91,10 @@ func main() {
 
 	app.Get("/routes/bgp", func(c *fiber.Ctx) error {
 		asn := c.Query("asn")
-		if asn == "" {
-			return c.Status(fiber.StatusBadRequest).SendString("ASN parameter is required")
+		if !isValidASN(asn) {
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid ASN format")
 		}
-		cmd := fmt.Sprintf("sudo birdc show route where bgp_path ~ [= * %s * =] all", asn)
-		response, err := executeCommand(cmd)
+		response, err := executeBirdCommand(fmt.Sprintf("where bgp_path ~ [= * %s * =] all", asn))
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		}
@@ -64,24 +103,14 @@ func main() {
 
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
-		if ip == "" {
-			return c.Status(fiber.StatusBadRequest).SendString("IP parameter is required")
+		if !isValidIP(ip) {
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid IP format")
 		}
-		cmd := fmt.Sprintf("ping -c 5 %s", ip)
-
-		resultChan := make(chan string)
-		doneChan := make(chan bool)
-
-		go executeCommandAsync(cmd, resultChan, doneChan)
-
-		timeout := 10 * time.Second
-		select {
-		case response := <-resultChan:
-			return c.Status(fiber.StatusOK).SendString(fmt.Sprintf("Ping for IP %s:\n%s", ip, response))
-		case <-time.After(timeout):
-			doneChan <- true
-			return c.Status(fiber.StatusRequestTimeout).SendString("Ping command timed out")
+		response, err := executePing(ip)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		}
+		return c.SendString(fmt.Sprintf("Ping for IP %s:\n%s", ip, response))
 	})
 
 	log.Fatal(app.Listen(":8080"))
