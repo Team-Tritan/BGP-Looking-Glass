@@ -67,7 +67,7 @@ func main() {
 		if ip == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "IP parameter is required"})
 		}
-		cmd := fmt.Sprintf("ping %s", ip)
+		cmd := fmt.Sprintf("ping -c 5 %s", ip)
 
 		resultChan := make(chan string)
 		doneChan := make(chan bool)
