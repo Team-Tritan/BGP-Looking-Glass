@@ -26,7 +26,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/show-route", func(c *fiber.Ctx) error {
 		subnet := c.Query("subnet")
 		if !regex.IsValidSubnet(subnet) {
-			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid subnet param")
+			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid subnet.")
 		}
 		response, err := commands.ExecuteBirdCommand(subnet)
 		if err != nil {
@@ -38,7 +38,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/bgp-routes", func(c *fiber.Ctx) error {
 		asn := c.Query("asn")
 		if !regex.IsValidASN(asn) {
-			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid ASN param")
+			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid ASN.")
 		}
 		response, err := commands.ExecuteBirdCommand(fmt.Sprintf("where bgp_path ~ [= * %s * =] all", asn))
 		if err != nil {
@@ -50,7 +50,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
 		if !regex.IsValidIP(ip) {
-			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid IP param")
+			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid IP.")
 		}
 		response, err := commands.ExecutePing(ip)
 		if err != nil {
@@ -62,7 +62,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/traceroute", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
 		if !regex.IsValidIP(ip) {
-			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid IP param")
+			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid IP.")
 		}
 		response, err := commands.ExecuteTraceroute(ip)
 		if err != nil {
@@ -74,7 +74,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/mtr", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
 		if !regex.IsValidIP(ip) {
-			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid IP param")
+			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid IP.")
 		}
 		response, err := commands.ExecuteMTR(ip)
 		if err != nil {
