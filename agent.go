@@ -65,7 +65,7 @@ func main() {
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		ip := c.Query("ip")
 		if ip == "" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "IP parameter is required"})
+			return c.Status(fiber.StatusBadRequest).SendString("IP parameter is required")
 		}
 		cmd := fmt.Sprintf("ping -c 5 %s", ip)
 
@@ -77,10 +77,10 @@ func main() {
 		timeout := 10 * time.Second
 		select {
 		case response := <-resultChan:
-			return c.Status(fiber.StatusOK).JSON(fiber.Map{"ip": ip, "response": response})
+			return c.Status(fiber.StatusOK).SendString(fmt.Sprintf("Ping for IP %s:\n%s", ip, response))
 		case <-time.After(timeout):
 			doneChan <- true
-			return c.Status(fiber.StatusRequestTimeout).JSON(fiber.Map{"error": "Ping command timed out"})
+			return c.Status(fiber.StatusRequestTimeout).SendString("Ping command timed out")
 		}
 	})
 
