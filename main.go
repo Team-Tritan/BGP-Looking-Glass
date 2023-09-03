@@ -22,7 +22,7 @@ func main() {
 	}
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		endpointList := fmt.Sprintf("~as393577 looking glass (ง'̀-'́)ง♡~\nEndpoints:\n%s", strings.Join(endpoints, "\n"))
+		endpointList := fmt.Sprintf("~as393577 looking glass (ง'̀-'́)ง♡~\n\nEndpoints:\n%s", strings.Join(endpoints, "\n"))
 		return c.SendString(endpointList)
 	})
 
