@@ -74,5 +74,17 @@ func main() {
 		return c.SendString(fmt.Sprintf("~as393577 looking glass (ง'̀-'́)ง♡~\n\n%s", response))
 	})
 
+	app.Get("/mtr", func(c *fiber.Ctx) error {
+		ip := c.Query("ip")
+		if !regex.IsValidIP(ip) {
+			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid IP param")
+		}
+		response, err := commands.ExecuteMTR(ip)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		}
+		return c.SendString(fmt.Sprintf("~as393577 looking glass (ง'̀-'́)ง♡~\n\n%s", response))
+	})
+
 	log.Fatal(app.Listen(":4000"))
 }
