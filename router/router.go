@@ -12,7 +12,7 @@ import (
 func SetupRoutes(app *fiber.App) {
 	endpoints := []string{
 		"/show-route?subnet=<subnet>",
-		"/asn-routes?asn=<asn>",
+		"/bgp-routes?asn=<asn>",
 		"/ping?ip=<ip>",
 		"/traceroute?ip=<ip>",
 		"/mtr?ip=<ip>",
@@ -35,7 +35,7 @@ func SetupRoutes(app *fiber.App) {
 		return c.SendString(fmt.Sprintf("~as393577 looking glass (ง'̀-'́)ง♡~\n\nRoute Info for IP %s:\n%s", subnet, response))
 	})
 
-	app.Get("/asn-routes", func(c *fiber.Ctx) error {
+	app.Get("/bgp-routes", func(c *fiber.Ctx) error {
 		asn := c.Query("asn")
 		if !regex.IsValidASN(asn) {
 			return c.Status(fiber.StatusBadRequest).SendString("~as393577 looking glass (ง'̀-'́)ง♡~\n\nInvalid ASN param")
